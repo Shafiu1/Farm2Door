@@ -1,54 +1,59 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-// Async thunk for login
+// MOCK LOGIN - Remove this when backend is ready
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async ({ email, password }, { rejectWithValue }) => {
         try {
-            // API call will be implemented later
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
-            if (!response.ok) {
-                const error = await response.json();
-                return rejectWithValue(error.message);
+            // Mock validation
+            if (email === 'demo@freshmart.com' && password === 'demo123') {
+                const mockUser = {
+                    id: 1,
+                    name: 'Demo User',
+                    email: 'demo@freshmart.com',
+                    phone: '+880 1700-000000',
+                };
+
+                const mockToken = 'mock-jwt-token-' + Date.now();
+
+                return {
+                    user: mockUser,
+                    token: mockToken,
+                };
+            } else {
+                return rejectWithValue('Invalid email or password');
             }
-
-            const data = await response.json();
-            localStorage.setItem('token', data.token);
-            return data;
         } catch (error) {
             return rejectWithValue(error.message);
         }
     }
 );
 
-// Async thunk for registration
+// MOCK REGISTER - Remove this when backend is ready
 export const registerUser = createAsyncThunk(
     'auth/registerUser',
     async (userData, { rejectWithValue }) => {
         try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(userData),
-            });
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
-            if (!response.ok) {
-                const error = await response.json();
-                return rejectWithValue(error.message);
-            }
+            // Mock user creation
+            const mockUser = {
+                id: Date.now(),
+                name: userData.name,
+                email: userData.email,
+                phone: userData.phone,
+            };
 
-            const data = await response.json();
-            localStorage.setItem('token', data.token);
-            return data;
+            const mockToken = 'mock-jwt-token-' + Date.now();
+
+            return {
+                user: mockUser,
+                token: mockToken,
+            };
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -94,6 +99,7 @@ const authSlice = createSlice({
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
                 state.error = null;
+                localStorage.setItem('token', action.payload.token);
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
@@ -111,6 +117,7 @@ const authSlice = createSlice({
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
                 state.error = null;
+                localStorage.setItem('token', action.payload.token);
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;
