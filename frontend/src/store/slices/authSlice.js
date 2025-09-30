@@ -1,61 +1,52 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-// MOCK LOGIN - Remove this when backend is ready
+// ✅ Async thunk for login
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async ({ email, password }, { rejectWithValue }) => {
         try {
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
 
-            // Mock validation
-            if (email === 'demo@freshmart.com' && password === 'demo123') {
-                const mockUser = {
-                    id: 1,
-                    name: 'Demo User',
-                    email: 'demo@freshmart.com',
-                    phone: '+880 1700-000000',
-                };
+            // Read body only once
+            const data = await response.json().catch(() => ({}));
 
-                const mockToken = 'mock-jwt-token-' + Date.now();
-
-                return {
-                    user: mockUser,
-                    token: mockToken,
-                };
-            } else {
-                return rejectWithValue('Invalid email or password');
+            if (!response.ok) {
+                return rejectWithValue(data.message || 'Login failed');
             }
+
+            localStorage.setItem('token', data.token);
+            return data;
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.message || 'Network error');
         }
     }
 );
 
-// MOCK REGISTER - Remove this when backend is ready
+// ✅ Async thunk for registration
 export const registerUser = createAsyncThunk(
     'auth/registerUser',
     async (userData, { rejectWithValue }) => {
         try {
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await fetch('http://localhost:5000/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData),
+            });
 
-            // Mock user creation
-            const mockUser = {
-                id: Date.now(),
-                name: userData.name,
-                email: userData.email,
-                phone: userData.phone,
-            };
+            const data = await response.json().catch(() => ({}));
 
-            const mockToken = 'mock-jwt-token-' + Date.now();
+            if (!response.ok) {
+                return rejectWithValue(data.message || 'Registration failed');
+            }
 
-            return {
-                user: mockUser,
-                token: mockToken,
-            };
+            localStorage.setItem('token', data.token);
+            return data;
         } catch (error) {
-            return rejectWithValue(error.message);
+            return rejectWithValue(error.message || 'Network error');
         }
     }
 );
@@ -88,7 +79,7 @@ const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Login cases
+            // 🔹 Login cases
             .addCase(loginUser.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -99,14 +90,13 @@ const authSlice = createSlice({
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
                 state.error = null;
-                localStorage.setItem('token', action.payload.token);
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload;
                 state.isAuthenticated = false;
             })
-            // Register cases
+            // 🔹 Register cases
             .addCase(registerUser.pending, (state) => {
                 state.isLoading = true;
                 state.error = null;
@@ -117,7 +107,6 @@ const authSlice = createSlice({
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
                 state.error = null;
-                localStorage.setItem('token', action.payload.token);
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.isLoading = false;

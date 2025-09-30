@@ -4,11 +4,13 @@ import api from './api';
 export const authService = {
     // Register new user
     register: (userData) => {
+        console.log('🔍 Registering user to:', import.meta.env.VITE_API_URL);
         return api.post('/auth/register', userData);
     },
 
     // Login user
     login: (credentials) => {
+        console.log('🔍 Logging in to:', import.meta.env.VITE_API_URL);
         return api.post('/auth/login', credentials);
     },
 
