@@ -9,9 +9,9 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/authRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
-import cartRoutes from './routes/cartRoutes.js';
+// import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
+// import paymentRoutes from './routes/paymentRoutes.js';
 
 // Import error handler
 import { errorHandler, notFound } from './middlewares/errorMiddleware.js';
@@ -60,9 +60,9 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
-app.use('/api/cart', cartRoutes);
+// app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/payments', paymentRoutes);
+// app.use('/api/payments', paymentRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
