@@ -9,12 +9,12 @@ const ProductCard = ({ product }) => {
     const dispatch = useDispatch();
 
     const handleAddToCart = (e) => {
-        e.preventDefault(); // Prevent navigation when clicking add to cart
+        e.preventDefault();
         dispatch(addToCart({
-            id: product.id,
+            id: product._id,
             name: product.name,
             price: product.price,
-            image: product.image,
+            image: product.images?.[0]?.url || '/api/placeholder/400/300',
             unit: product.unit,
             stock: product.stock,
         }));
@@ -27,13 +27,13 @@ const ProductCard = ({ product }) => {
 
     return (
         <Link
-            to={`/products/${product.id}`}
+            to={`/products/${product._id}`}
             className="group bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-all duration-300"
         >
             {/* Product Image */}
             <div className="relative overflow-hidden bg-gray-100">
                 <img
-                    src={product.image}
+                    src={product.images?.[0]?.url || '/api/placeholder/400/300'}
                     alt={product.name}
                     className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
@@ -53,7 +53,7 @@ const ProductCard = ({ product }) => {
                 </div>
 
                 {/* Stock Badge */}
-                {product.inStock ? (
+                {product.stock > 0 ? (
                     <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
                         In Stock
                     </div>
@@ -78,9 +78,9 @@ const ProductCard = ({ product }) => {
             {/* Product Info */}
             <div className="p-4 space-y-3">
                 {/* Category */}
-                {product.category && (
+                {product.category?.name && (
                     <span className="text-xs text-green-600 font-medium uppercase">
-                        {product.category}
+                        {product.category.name}
                     </span>
                 )}
 
@@ -101,12 +101,12 @@ const ProductCard = ({ product }) => {
                     <div className="flex items-center text-yellow-400">
                         <Star size={16} fill="currentColor" />
                         <span className="text-sm text-gray-600 ml-1 font-medium">
-                            {product.rating || 4.5}
+                            {product.rating || 0}
                         </span>
                     </div>
                     <span className="text-xs text-gray-400">•</span>
                     <span className="text-xs text-gray-600">
-                        ({product.reviews || 0} reviews)
+                        ({product.numReviews || 0} reviews)
                     </span>
                 </div>
 
@@ -132,8 +132,8 @@ const ProductCard = ({ product }) => {
 
                     <button
                         onClick={handleAddToCart}
-                        disabled={!product.inStock}
-                        className={`p-2 rounded-lg transition-colors ${product.inStock
+                        disabled={product.stock === 0}
+                        className={`p-2 rounded-lg transition-colors ${product.stock > 0
                                 ? 'bg-green-500 hover:bg-green-600 text-white'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}

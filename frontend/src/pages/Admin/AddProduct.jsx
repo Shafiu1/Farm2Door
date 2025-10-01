@@ -30,9 +30,8 @@ const AddProduct = () => {
 
     const fetchCategories = async () => {
         try {
-            const { data } = await api.get('/categories');
-            // Make sure to access `data.categories` if your backend sends {categories:[]}
-            setCategories(data.categories || []);
+            const response = await api.get('/categories');
+            setCategories(response.categories);
         } catch (error) {
             toast.error('Failed to fetch categories');
         }
@@ -54,29 +53,18 @@ const AddProduct = () => {
             const productData = {
                 ...formData,
                 price: parseFloat(formData.price),
-                originalPrice: formData.originalPrice
-                    ? parseFloat(formData.originalPrice)
-                    : null,
+                originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
                 stock: parseInt(formData.stock),
-                features: formData.features
-                    .split(',')
-                    .map(f => f.trim())
-                    .filter(f => f),
-                tags: formData.tags
-                    .split(',')
-                    .map(t => t.trim())
-                    .filter(t => t),
-                images: [{ url: '/api/placeholder/400/300' }], // Temporary placeholder
+                features: formData.features.split(',').map(f => f.trim()).filter(f => f),
+                tags: formData.tags.split(',').map(t => t.trim()).filter(t => t),
+                images: [{ url: '/api/placeholder/400/300' }],
             };
 
             await api.post('/products', productData);
-
             toast.success('Product added successfully!');
-            navigate('/admin/products');
+            navigate('/admin/dashboard');
         } catch (error) {
-            toast.error(
-                error.response?.data?.message || 'Failed to add product'
-            );
+            toast.error(error.message || 'Failed to add product');
         } finally {
             setLoading(false);
         }
@@ -85,7 +73,6 @@ const AddProduct = () => {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="container max-w-4xl">
-                {/* Header */}
                 <div className="mb-8">
                     <button
                         onClick={() => navigate(-1)}
@@ -95,21 +82,12 @@ const AddProduct = () => {
                         Back
                     </button>
                     <h1 className="text-3xl font-bold">Add New Product</h1>
-                    <p className="text-gray-600 mt-1">
-                        Fill in the product details below
-                    </p>
+                    <p className="text-gray-600 mt-1">Fill in the product details below</p>
                 </div>
 
-                {/* Form */}
-                <form
-                    onSubmit={handleSubmit}
-                    className="bg-white rounded-xl border border-gray-200 p-6 space-y-6"
-                >
-                    {/* Basic Information */}
+                <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
                     <div>
-                        <h2 className="text-xl font-bold mb-4">
-                            Basic Information
-                        </h2>
+                        <h2 className="text-xl font-bold mb-4">Basic Information</h2>
                         <div className="grid md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -171,11 +149,8 @@ const AddProduct = () => {
                         </div>
                     </div>
 
-                    {/* Pricing & Stock */}
                     <div>
-                        <h2 className="text-xl font-bold mb-4">
-                            Pricing & Stock
-                        </h2>
+                        <h2 className="text-xl font-bold mb-4">Pricing & Stock</h2>
                         <div className="grid md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -228,7 +203,6 @@ const AddProduct = () => {
                         </div>
                     </div>
 
-                    {/* Category & Unit */}
                     <div>
                         <h2 className="text-xl font-bold mb-4">Category & Unit</h2>
                         <div className="grid md:grid-cols-2 gap-4">
@@ -275,7 +249,6 @@ const AddProduct = () => {
                         </div>
                     </div>
 
-                    {/* Features & Tags */}
                     <div>
                         <h2 className="text-xl font-bold mb-4">Additional Details</h2>
                         <div className="space-y-4">
@@ -292,7 +265,7 @@ const AddProduct = () => {
                                     placeholder="Organically grown, No pesticides, Farm fresh"
                                 />
                                 <p className="text-sm text-gray-500 mt-1">
-                                    Example: Organically grown, No pesticides
+                                    Separate features with commas
                                 </p>
                             </div>
 
@@ -306,44 +279,57 @@ const AddProduct = () => {
                                     value={formData.tags}
                                     onChange={handleChange}
                                     className="input-field"
-                                    placeholder="Vegetables, Fresh, Seasonal"
+                                    placeholder="vegetables, organic, fresh"
                                 />
                                 <p className="text-sm text-gray-500 mt-1">
-                                    Example: Vegetables, Fresh
+                                    Separate tags with commas
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-6">
                                 <label className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
                                         name="isOrganic"
                                         checked={formData.isOrganic}
                                         onChange={handleChange}
+                                        className="w-4 h-4 text-green-600 rounded"
                                     />
-                                    <span>Organic Product</span>
+                                    <span className="text-sm font-medium text-gray-700">
+                                        Organic Product
+                                    </span>
                                 </label>
+
                                 <label className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
                                         name="isFeatured"
                                         checked={formData.isFeatured}
                                         onChange={handleChange}
+                                        className="w-4 h-4 text-green-600 rounded"
                                     />
-                                    <span>Featured Product</span>
+                                    <span className="text-sm font-medium text-gray-700">
+                                        Featured Product
+                                    </span>
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    {/* Submit Button */}
-                    <div className="flex justify-end">
+                    <div className="flex gap-4">
                         <button
                             type="submit"
                             disabled={loading}
-                            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            className="btn-primary flex-1"
                         >
-                            {loading ? 'Saving...' : 'Add Product'}
+                            {loading ? 'Adding Product...' : 'Add Product'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate(-1)}
+                            className="btn-outline"
+                        >
+                            Cancel
                         </button>
                     </div>
                 </form>

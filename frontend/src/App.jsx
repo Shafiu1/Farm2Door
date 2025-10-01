@@ -20,6 +20,10 @@ import Profile from './pages/Profile';
 import Orders from './pages/Orders';
 import NotFound from './pages/NotFound';
 
+// Admin Pages
+import AdminDashboard from './pages/Admin/Dashboard';
+import AddProduct from './pages/Admin/AddProduct';
+
 // Styles
 import './index.css';
 
@@ -32,6 +36,7 @@ function App() {
 
           <main className="flex-grow">
             <Routes>
+              {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
               <Route path="/products/:id" element={<ProductDetails />} />
@@ -41,6 +46,12 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/orders" element={<Orders />} />
+
+              {/* Admin Routes */}
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/products/add" element={<AddProduct />} />
+
+              {/* 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
