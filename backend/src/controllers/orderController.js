@@ -1,6 +1,7 @@
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
-
+import User from '../models/User.js';
+import { sendOrderConfirmationEmail,sendOrderStatusEmail } from '../utils/emailService.js';
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private

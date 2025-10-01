@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 
@@ -8,6 +8,8 @@ const AddProduct = () => {
     const navigate = useNavigate();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [imagePreview, setImagePreview] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         namebn: '',
@@ -22,6 +24,8 @@ const AddProduct = () => {
         isFeatured: false,
         features: '',
         tags: '',
+        imageUrl: '',
+        imagePublicId: '',
     });
 
     useEffect(() => {
@@ -45,19 +49,95 @@ const AddProduct = () => {
         });
     };
 
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file');
+            return;
+        }
+
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size should be less than 5MB');
+            return;
+        }
+
+        setUploadingImage(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await api.post('/upload/image', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            setFormData(prev => ({
+                ...prev,
+                imageUrl: response.image.url,
+                imagePublicId: response.image.public_id,
+            }));
+            setImagePreview(response.image.url);
+            toast.success('Image uploaded successfully!');
+        } catch (error) {
+            toast.error(error.message || 'Failed to upload image');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
+    const handleRemoveImage = async () => {
+        if (formData.imagePublicId) {
+            try {
+                await api.delete('/upload/image', {
+                    data: { public_id: formData.imagePublicId }
+                });
+            } catch (error) {
+                console.error('Failed to delete image:', error);
+            }
+        }
+        setFormData(prev => ({
+            ...prev,
+            imageUrl: '',
+            imagePublicId: '',
+        }));
+        setImagePreview(null);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!formData.imageUrl) {
+            toast.error('Please upload a product image');
+            return;
+        }
+
         setLoading(true);
 
         try {
             const productData = {
-                ...formData,
+                name: formData.name,
+                namebn: formData.namebn,
+                description: formData.description,
+                descriptionbn: formData.descriptionbn,
                 price: parseFloat(formData.price),
                 originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
+                category: formData.category,
+                unit: formData.unit,
                 stock: parseInt(formData.stock),
+                isOrganic: formData.isOrganic,
+                isFeatured: formData.isFeatured,
                 features: formData.features.split(',').map(f => f.trim()).filter(f => f),
                 tags: formData.tags.split(',').map(t => t.trim()).filter(t => t),
-                images: [{ url: '/api/placeholder/400/300' }],
+                images: [{
+                    url: formData.imageUrl,
+                    public_id: formData.imagePublicId,
+                }],
             };
 
             await api.post('/products', productData);
@@ -86,6 +166,49 @@ const AddProduct = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+                    {/* Image Upload */}
+                    <div>
+                        <h2 className="text-xl font-bold mb-4">Product Image</h2>
+                        <div className="space-y-4">
+                            {imagePreview ? (
+                                <div className="relative inline-block">
+                                    <img
+                                        src={imagePreview}
+                                        alt="Preview"
+                                        className="w-full max-w-md h-64 object-cover rounded-lg border-2 border-gray-200"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleRemoveImage}
+                                        className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                    <Upload className="mx-auto text-gray-400 mb-4" size={48} />
+                                    <label className="cursor-pointer">
+                                        <span className="btn-primary">
+                                            {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                                        </span>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            className="hidden"
+                                            disabled={uploadingImage}
+                                        />
+                                    </label>
+                                    <p className="text-sm text-gray-500 mt-2">
+                                        PNG, JPG, GIF up to 5MB
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Basic Information */}
                     <div>
                         <h2 className="text-xl font-bold mb-4">Basic Information</h2>
                         <div className="grid md:grid-cols-2 gap-4">
@@ -149,6 +272,7 @@ const AddProduct = () => {
                         </div>
                     </div>
 
+                    {/* Pricing & Stock */}
                     <div>
                         <h2 className="text-xl font-bold mb-4">Pricing & Stock</h2>
                         <div className="grid md:grid-cols-3 gap-4">
@@ -203,6 +327,7 @@ const AddProduct = () => {
                         </div>
                     </div>
 
+                    {/* Category & Unit */}
                     <div>
                         <h2 className="text-xl font-bold mb-4">Category & Unit</h2>
                         <div className="grid md:grid-cols-2 gap-4">
@@ -249,6 +374,7 @@ const AddProduct = () => {
                         </div>
                     </div>
 
+                    {/* Additional Details */}
                     <div>
                         <h2 className="text-xl font-bold mb-4">Additional Details</h2>
                         <div className="space-y-4">
@@ -319,7 +445,7 @@ const AddProduct = () => {
                     <div className="flex gap-4">
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || uploadingImage}
                             className="btn-primary flex-1"
                         >
                             {loading ? 'Adding Product...' : 'Add Product'}
@@ -339,3 +465,4 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
+

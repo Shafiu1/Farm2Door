@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import { sendTokenResponse } from '../utils/jwtToken.js';
+import { sendWelcomeEmail } from '../utils/emailService.js';
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -27,6 +28,9 @@ export const register = async (req, res, next) => {
             phone,
             password,
         });
+
+        // Send welcome email (non-blocking)
+        sendWelcomeEmail(user).catch(err => console.error('Failed to send welcome email:', err));
 
         sendTokenResponse(user, 201, res);
     } catch (error) {
