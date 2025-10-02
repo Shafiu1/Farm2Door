@@ -6,6 +6,7 @@ import {
     updateOrderStatus,
     cancelOrder,
     getAllOrders,
+    getDashboardStats, // Add this import
 } from '../controllers/orderController.js';
 import { protect, admin } from '../middlewares/authMiddleware.js';
 
@@ -18,6 +19,7 @@ router.get('/:id', protect, getOrderById);
 router.put('/:id/cancel', protect, cancelOrder);
 
 // Admin routes
+router.get('/admin/stats', protect, admin, getDashboardStats); // Add this route BEFORE '/'
 router.get('/', protect, admin, getAllOrders);
 router.put('/:id/status', protect, admin, updateOrderStatus);
 
