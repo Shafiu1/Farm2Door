@@ -1,28 +1,63 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import {
     ArrowRight,
     Star,
     Truck,
     Shield,
-    Clock,
     Leaf,
     Apple,
     Carrot,
     Fish,
-    Milk
+    Milk,
 } from 'lucide-react';
 
-const Home = () => {
-    // Sample categories data
-    const categories = [
-        { id: 1, name: 'Vegetables', namebn: 'সবজি', icon: Carrot, color: 'bg-green-100 text-green-600', count: '50+ items' },
-        { id: 2, name: 'Fruits', namebn: 'ফল', icon: Apple, color: 'bg-red-100 text-red-600', count: '30+ items' },
-        { id: 3, name: 'Fish & Meat', namebn: 'মাছ ও মাংস', icon: Fish, color: 'bg-blue-100 text-blue-600', count: '25+ items' },
-        { id: 4, name: 'Dairy', namebn: 'দুগ্ধজাত', icon: Milk, color: 'bg-yellow-100 text-yellow-600', count: '20+ items' },
-    ];
+// Map category slugs (preferred) or names to icon components
+const iconMap = {
+    vegetables: Carrot,
+    fruits: Apple,
+    'fish-meat': Fish,
+    dairy: Milk,
+};
 
-    // Sample featured products
+const Home = () => {
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const controller = new AbortController();
+
+        const fetchCategories = async () => {
+            try {
+                setLoading(true);
+                const res = await axios.get('http://localhost:5000/api/categories', {
+                    signal: controller.signal,
+                });
+
+                // backend returns { success: true, count, categories }
+                if (res.data && Array.isArray(res.data.categories)) {
+                    setCategories(res.data.categories);
+                } else if (Array.isArray(res.data)) {
+                    // in case backend returns raw array
+                    setCategories(res.data);
+                } else {
+                    throw new Error(res.data?.message || 'Invalid categories response');
+                }
+            } catch (err) {
+                if (axios.isCancel(err)) return;
+                setError(err.response?.data?.message || err.message || 'Failed to load categories');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCategories();
+        return () => controller.abort();
+    }, []);
+
+    // static featured products (kept as-is)
     const featuredProducts = [
         {
             id: 1,
@@ -33,7 +68,7 @@ const Home = () => {
             image: '/api/placeholder/250/200',
             rating: 4.5,
             inStock: true,
-            unit: 'kg'
+            unit: 'kg',
         },
         {
             id: 2,
@@ -44,7 +79,7 @@ const Home = () => {
             image: '/api/placeholder/250/200',
             rating: 4.8,
             inStock: true,
-            unit: 'kg'
+            unit: 'kg',
         },
         {
             id: 3,
@@ -55,7 +90,7 @@ const Home = () => {
             image: '/api/placeholder/250/200',
             rating: 4.7,
             inStock: true,
-            unit: 'liter'
+            unit: 'liter',
         },
         {
             id: 4,
@@ -66,8 +101,8 @@ const Home = () => {
             image: '/api/placeholder/250/200',
             rating: 4.6,
             inStock: true,
-            unit: 'kg'
-        }
+            unit: 'kg',
+        },
     ];
 
     return (
@@ -82,9 +117,7 @@ const Home = () => {
                                 <span className="block text-yellow-300">Delivered Fast</span>
                             </h1>
                             <p className="text-xl text-green-100 leading-relaxed">
-                                <span className="text-bangla block">
-                                    তাজা সবজি, ফল এবং দৈনন্দিন প্রয়োজনীয় পণ্য
-                                </span>
+                                <span className="text-bangla block">তাজা সবজি, ফল এবং দৈনন্দিন প্রয়োজনীয় পণ্য</span>
                                 Get fresh, organic groceries delivered to your doorstep within 30 minutes
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4">
@@ -106,17 +139,14 @@ const Home = () => {
                                     alt="Fresh Groceries"
                                     className="w-full h-auto rounded-2xl shadow-2xl"
                                 />
-                                {/* Floating Badge */}
-                                <div className="absolute -top-4 -right-4 bg-yellow-400 text-gray-900 px-4 py-2 rounded-full font-bold text-sm">
-                                    30% OFF
-                                </div>
+                                <div className="absolute -top-4 -right-4 bg-yellow-400 text-gray-900 px-4 py-2 rounded-full font-bold text-sm">30% OFF</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Features Section */}
+            {/* Features */}
             <section className="py-16 bg-gray-50">
                 <div className="container">
                     <div className="grid md:grid-cols-3 gap-8">
@@ -158,39 +188,43 @@ const Home = () => {
             <section className="py-16">
                 <div className="container">
                     <div className="text-center mb-12">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">
-                            Shop by Category
-                        </h2>
-                        <p className="text-xl text-gray-600 text-bangla">
-                            আপনার প্রয়োজনীয় পণ্যের ক্যাটেগরি নির্বাচন করুন
-                        </p>
+                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Shop by Category</h2>
+                        <p className="text-xl text-gray-600 text-bangla">আপনার প্রয়োজনীয় পণ্যের ক্যাটেগরি নির্বাচন করুন</p>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {categories.map((category) => {
-                            const IconComponent = category.icon;
-                            return (
-                                <Link
-                                    key={category.id}
-                                    to={`/products?category=${category.name.toLowerCase()}`}
-                                    className="group p-6 bg-white rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 hover:border-green-200 transition-all duration-300"
-                                >
-                                    <div className={`w-16 h-16 ${category.color} rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
-                                        <IconComponent size={32} />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-center mb-2">
-                                        {category.name}
-                                    </h3>
-                                    <p className="text-center text-bangla text-gray-700 mb-2">
-                                        {category.namebn}
-                                    </p>
-                                    <p className="text-center text-sm text-gray-500">
-                                        {category.count}
-                                    </p>
-                                </Link>
-                            );
-                        })}
-                    </div>
+                    {loading ? (
+                        <p className="text-center text-gray-600">Loading categories...</p>
+                    ) : error ? (
+                        <p className="text-center text-red-500">{error}</p>
+                    ) : (
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {categories.map((category) => {
+                                const slugKey = (category.slug || category.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                                const IconComponent = iconMap[slugKey] || Leaf;
+                                return (
+                                    <Link
+                                        key={category._id}
+                                        to={`/products?category=${category._id}`}  // Changed from category.slug
+                                        className="group p-6 bg-white rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 hover:border-green-200 transition-all duration-300"
+                                    >
+                                        <div className={`w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                                            {category.image?.url ? (
+                                                <img src={category.image.url} alt={category.name} className="w-10 h-10 object-cover rounded" />
+                                            ) : (
+                                                <IconComponent size={32} />
+                                            )}
+                                        </div>
+
+                                        <h3 className="text-lg font-semibold text-center mb-2">{category.name}</h3>
+                                        {category.namebn && <p className="text-center text-bangla text-gray-700 mb-2">{category.namebn}</p>}
+                                        {typeof category.count !== 'undefined' && (
+                                            <p className="text-center text-sm text-gray-500">{category.count}</p>
+                                        )}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </section>
 
@@ -199,17 +233,10 @@ const Home = () => {
                 <div className="container">
                     <div className="flex justify-between items-center mb-12">
                         <div>
-                            <h2 className="text-4xl font-bold text-gray-900 mb-2">
-                                Featured Products
-                            </h2>
-                            <p className="text-xl text-gray-600 text-bangla">
-                                আজকের বিশেষ অফার
-                            </p>
+                            <h2 className="text-4xl font-bold text-gray-900 mb-2">Featured Products</h2>
+                            <p className="text-xl text-gray-600 text-bangla">আজকের বিশেষ অফার</p>
                         </div>
-                        <Link
-                            to="/products"
-                            className="text-green-600 hover:text-green-700 font-semibold flex items-center gap-2"
-                        >
+                        <Link to="/products" className="text-green-600 hover:text-green-700 font-semibold flex items-center gap-2">
                             View All <ArrowRight size={20} />
                         </Link>
                     </div>
@@ -218,18 +245,12 @@ const Home = () => {
                         {featuredProducts.map((product) => (
                             <div key={product.id} className="bg-white rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 group">
                                 <div className="relative">
-                                    <img
-                                        src={product.image}
-                                        alt={product.name}
-                                        className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
+                                    <img src={product.image} alt={product.name} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
                                     <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
                                         {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                                     </div>
                                     {product.inStock && (
-                                        <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                                            In Stock
-                                        </div>
+                                        <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">In Stock</div>
                                     )}
                                 </div>
 
@@ -253,9 +274,7 @@ const Home = () => {
                                             <span className="text-lg font-bold text-gray-900">৳{product.price}</span>
                                             <span className="text-sm text-gray-500 line-through">৳{product.originalPrice}</span>
                                         </div>
-                                        <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors">
-                                            Add to Cart
-                                        </button>
+                                        <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors">Add to Cart</button>
                                     </div>
                                 </div>
                             </div>
@@ -268,18 +287,10 @@ const Home = () => {
             <section className="py-16 bg-green-600 text-white">
                 <div className="container text-center">
                     <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
-                    <p className="text-xl text-green-100 mb-8 text-bangla">
-                        বিশেষ অফার এবং নতুন পণ্যের খবর পেতে সাবস্ক্রাইব করুন
-                    </p>
+                    <p className="text-xl text-green-100 mb-8 text-bangla">বিশেষ অফার এবং নতুন পণ্যের খবর পেতে সাবস্ক্রাইব করুন</p>
                     <div className="max-w-md mx-auto flex gap-4">
-                        <input
-                            type="email"
-                            placeholder="Enter your email"
-                            className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-300"
-                        />
-                        <button className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors">
-                            Subscribe
-                        </button>
+                        <input type="email" placeholder="Enter your email" className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-300" />
+                        <button className="bg-white text-green-600 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors">Subscribe</button>
                     </div>
                 </div>
             </section>

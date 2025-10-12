@@ -188,7 +188,9 @@ const AddProduct = () => {
                             ) : (
                                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                                     <Upload className="mx-auto text-gray-400 mb-4" size={48} />
-                                    <label className="cursor-pointer">
+                                        <label
+                                            className="cursor-pointer inline-block bg-green-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-green-600 active:bg-green-700 transition duration-200"
+                                        >
                                         <span className="btn-primary">
                                             {uploadingImage ? 'Uploading...' : 'Upload Image'}
                                         </span>

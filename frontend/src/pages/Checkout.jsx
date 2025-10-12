@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { MapPin, Phone, Mail, CreditCard, Wallet } from 'lucide-react';
+import { MapPin, Phone, Wallet } from 'lucide-react';
 import { clearCart } from '../store/slices/cartSlice';
 import { createOrder } from '../store/slices/orderSlice';
 import toast from 'react-hot-toast';
@@ -26,7 +26,9 @@ const Checkout = () => {
     const [paymentMethod, setPaymentMethod] = useState('bkash');
 
     const deliveryCharge = totalAmount >= 500 ? 0 : 50;
-    const finalTotal = totalAmount + deliveryCharge;
+    const itemsPrice = totalAmount;
+    const taxPrice = 0; // Optional
+    const totalPrice = itemsPrice + deliveryCharge + taxPrice;
 
     const divisions = [
         'Dhaka', 'Chittagong', 'Rajshahi', 'Khulna',
@@ -55,7 +57,6 @@ const Checkout = () => {
             return;
         }
 
-        // Validate shipping info
         if (!shippingInfo.fullName || !shippingInfo.phone || !shippingInfo.address) {
             toast.error('Please fill all required fields!');
             return;
@@ -64,30 +65,37 @@ const Checkout = () => {
         setIsProcessing(true);
 
         try {
-            // Create order object
+            // Prepare order payload matching backend
             const orderData = {
-                items: items,
-                shippingInfo: shippingInfo,
-                paymentMethod: paymentMethod,
-                totalAmount: finalTotal,
-                deliveryCharge: deliveryCharge,
+                orderItems: items.map(item => ({
+                    product: item.id || item._id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                    image: item.image
+                })),
+                shippingInfo,
+                paymentInfo: {
+                    method: paymentMethod,
+                    status: 'pending'
+                },
+                itemsPrice,
+                deliveryCharge,
+                taxPrice,
+                totalPrice,
                 orderDate: new Date().toISOString(),
             };
 
-            // Simulate payment processing
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const resultAction = await dispatch(createOrder(orderData));
 
-            // Dispatch create order action
-            await dispatch(createOrder(orderData));
+            if (createOrder.fulfilled.match(resultAction)) {
+                dispatch(clearCart());
+                toast.success('Order placed successfully!');
+                navigate('/orders');
+            } else {
+                toast.error(resultAction.payload || 'Failed to place order');
+            }
 
-            // Clear cart
-            dispatch(clearCart());
-
-            // Show success message
-            toast.success('Order placed successfully!');
-
-            // Navigate to orders page
-            navigate('/orders');
         } catch (error) {
             toast.error('Failed to place order. Please try again.');
         } finally {
@@ -111,7 +119,6 @@ const Checkout = () => {
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="container">
                 <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-
                 <form onSubmit={handleSubmit}>
                     <div className="grid lg:grid-cols-3 gap-8">
                         {/* Left Column - Forms */}
@@ -122,8 +129,8 @@ const Checkout = () => {
                                     <MapPin className="text-green-500" />
                                     Shipping Information
                                 </h2>
-
                                 <div className="grid md:grid-cols-2 gap-4">
+                                    {/* Full Name */}
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Full Name <span className="text-red-500">*</span>
@@ -138,7 +145,7 @@ const Checkout = () => {
                                             required
                                         />
                                     </div>
-
+                                    {/* Phone */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Phone Number <span className="text-red-500">*</span>
@@ -153,7 +160,7 @@ const Checkout = () => {
                                             required
                                         />
                                     </div>
-
+                                    {/* Email */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Email Address
@@ -167,7 +174,7 @@ const Checkout = () => {
                                             placeholder="your@email.com"
                                         />
                                     </div>
-
+                                    {/* Address */}
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Street Address <span className="text-red-500">*</span>
@@ -182,7 +189,7 @@ const Checkout = () => {
                                             required
                                         />
                                     </div>
-
+                                    {/* City */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             City/Division <span className="text-red-500">*</span>
@@ -201,7 +208,7 @@ const Checkout = () => {
                                             ))}
                                         </select>
                                     </div>
-
+                                    {/* Area */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Area/Thana <span className="text-red-500">*</span>
@@ -216,7 +223,7 @@ const Checkout = () => {
                                             required
                                         />
                                     </div>
-
+                                    {/* Postal Code */}
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Postal Code
@@ -239,7 +246,6 @@ const Checkout = () => {
                                     <Wallet className="text-green-500" />
                                     Payment Method
                                 </h2>
-
                                 <div className="grid md:grid-cols-2 gap-4">
                                     {paymentMethods.map((method) => (
                                         <label
@@ -267,26 +273,10 @@ const Checkout = () => {
                                                         {method.id === 'cod' ? 'Pay when you receive' : 'Mobile payment'}
                                                     </p>
                                                 </div>
-                                                {paymentMethod === method.id && (
-                                                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                                        </svg>
-                                                    </div>
-                                                )}
                                             </div>
                                         </label>
                                     ))}
                                 </div>
-
-                                {/* Payment Instructions */}
-                                {paymentMethod !== 'cod' && (
-                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                                        <p className="text-sm text-blue-800">
-                                            <strong>Payment Instructions:</strong> After placing the order, you will be redirected to {paymentMethod.toUpperCase()} to complete the payment.
-                                        </p>
-                                    </div>
-                                )}
                             </div>
                         </div>
 
@@ -294,16 +284,10 @@ const Checkout = () => {
                         <div className="lg:col-span-1">
                             <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
                                 <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-
-                                {/* Cart Items */}
                                 <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
                                     {items.map((item) => (
                                         <div key={item.id} className="flex gap-3">
-                                            <img
-                                                src={item.image}
-                                                alt={item.name}
-                                                className="w-16 h-16 object-cover rounded-lg"
-                                            />
+                                            <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
                                             <div className="flex-1">
                                                 <p className="font-medium text-sm">{item.name}</p>
                                                 <p className="text-sm text-gray-600">
@@ -314,47 +298,33 @@ const Checkout = () => {
                                         </div>
                                     ))}
                                 </div>
-
                                 <hr className="my-4" />
-
-                                {/* Pricing */}
                                 <div className="space-y-2 mb-4">
                                     <div className="flex justify-between text-gray-600">
                                         <span>Subtotal</span>
-                                        <span>৳{totalAmount}</span>
+                                        <span>৳{itemsPrice}</span>
                                     </div>
                                     <div className="flex justify-between text-gray-600">
-                                        <span>Delivery Charge</span>
-                                        <span className={deliveryCharge === 0 ? 'text-green-600 font-medium' : ''}>
-                                            {deliveryCharge === 0 ? 'Free' : `৳${deliveryCharge}`}
-                                        </span>
+                                        <span>Delivery</span>
+                                        <span>৳{deliveryCharge}</span>
                                     </div>
-                                    <hr />
-                                    <div className="flex justify-between text-lg font-bold">
+                                    <div className="flex justify-between text-gray-600">
+                                        <span>Tax</span>
+                                        <span>৳{taxPrice}</span>
+                                    </div>
+                                    <div className="flex justify-between font-semibold text-lg">
                                         <span>Total</span>
-                                        <span>৳{finalTotal}</span>
+                                        <span>৳{totalPrice}</span>
                                     </div>
                                 </div>
-
-                                {/* Free Delivery Notice */}
-                                {totalAmount < 500 && (
-                                    <div className="mb-4 p-3 bg-yellow-50 rounded-lg text-sm text-yellow-800">
-                                        Add ৳{500 - totalAmount} more to get free delivery!
-                                    </div>
-                                )}
-
-                                {/* Place Order Button */}
                                 <button
                                     type="submit"
+                                    onClick={handleSubmit}
                                     disabled={isProcessing}
                                     className="btn-primary w-full"
                                 >
                                     {isProcessing ? 'Processing...' : 'Place Order'}
                                 </button>
-
-                                <p className="text-xs text-gray-500 text-center mt-4">
-                                    By placing your order, you agree to our terms and conditions
-                                </p>
                             </div>
                         </div>
                     </div>

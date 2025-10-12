@@ -49,6 +49,7 @@ const Products = () => {
             };
 
             if (selectedCategory && selectedCategory !== 'all') {
+                // Make sure to use the category ID, not slug
                 params.category = selectedCategory;
             }
 
@@ -56,6 +57,7 @@ const Products = () => {
             setProducts(response.products || []);
             setTotalProducts(response.totalProducts || 0);
         } catch (error) {
+            console.error('Error fetching products:', error);
             toast.error('Failed to fetch products');
             setProducts([]);
         } finally {
