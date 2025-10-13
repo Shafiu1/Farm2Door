@@ -27,6 +27,7 @@ import AdminOrderDetails from './pages/Admin/AdminOrderDetails';
 // Admin Pages
 import AdminDashboard from './pages/Admin/Dashboard';
 import AddProduct from './pages/Admin/AddProduct';
+import VerifyEmail from './pages/VerifyEmail';
 
 // Styles
 import './index.css';
@@ -50,6 +51,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/verify-email" element={<VerifyEmail />} />
 
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
