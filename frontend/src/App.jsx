@@ -21,6 +21,8 @@ import Orders from './pages/Orders';
 import NotFound from './pages/NotFound';
 import AdminOrders from './pages/Admin/AdminOrders.jsx';
 import AddCategory from './pages/Admin/AddCategory';
+import AdminOrderDetails from './pages/Admin/AdminOrderDetails';
+
 
 // Admin Pages
 import AdminDashboard from './pages/Admin/Dashboard';
@@ -53,6 +55,7 @@ function App() {
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
               <Route path="/admin/products/add" element={<AddProduct />} />
               <Route path="/admin/orders" element={<AdminOrders />} />
+              <Route path="/admin/orders/:id" element={<AdminOrderDetails />} />
               <Route path="/admin/categories/add" element={<AddCategory />} />
 
               {/* 404 */}
