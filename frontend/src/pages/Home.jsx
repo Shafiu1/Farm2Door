@@ -10,6 +10,7 @@ import {
     Carrot,
     Fish,
     Milk,
+    Pizza,
     X,
     Play,
     ShoppingCart
@@ -21,8 +22,9 @@ import toast from 'react-hot-toast';
 const iconMap = {
     vegetables: Carrot,
     fruits: Apple,
-    'fish-meat': Fish,
+    fish: Fish,
     dairy: Milk,
+    snacks:Pizza
 };
 
 const Home = () => {
@@ -75,10 +77,10 @@ const Home = () => {
     };
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen w-full">
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-green-600 to-green-500 text-white">
-                <div className="container py-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
                         <div className="space-y-6">
                             <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
@@ -123,7 +125,7 @@ const Home = () => {
 
             {/* Features */}
             <section className="py-16 bg-gray-50">
-                <div className="container">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="text-center space-y-4">
                             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto">
@@ -161,7 +163,7 @@ const Home = () => {
 
             {/* Categories Section */}
             <section className="py-16">
-                <div className="container">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-4xl font-bold text-gray-900 mb-4">Shop by Category</h2>
                         <p className="text-xl text-gray-600 text-bangla">আপনার প্রয়োজনীয় পণ্যের ক্যাটেগরি নির্বাচন করুন</p>
@@ -215,7 +217,7 @@ const Home = () => {
 
             {/* Featured Products */}
             <section className="py-16 bg-gray-50">
-                <div className="container">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center mb-12">
                         <div>
                             <h2 className="text-4xl font-bold text-gray-900 mb-2">Featured Products</h2>
@@ -327,7 +329,7 @@ const Home = () => {
 
             {/* Newsletter */}
             <section className="py-16 bg-green-600 text-white">
-                <div className="container text-center">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <h2 className="text-3xl font-bold mb-4">Stay Updated</h2>
                     <p className="text-xl text-green-100 mb-8 text-bangla">
                         বিশেষ অফার এবং নতুন পণ্যের খবর পেতে সাবস্ক্রাইব করুন
@@ -347,8 +349,8 @@ const Home = () => {
 
             {/* Demo Video Modal */}
             {showDemoModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl max-w-4xl w-full relative">
+                <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onClick={() => setShowDemoModal(false)}>
+                    <div className="bg-white rounded-2xl max-w-4xl w-full relative" onClick={(e) => e.stopPropagation()}>
                         <button
                             onClick={() => setShowDemoModal(false)}
                             className="absolute -top-4 -right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition-colors shadow-lg z-10"
@@ -357,17 +359,16 @@ const Home = () => {
                         </button>
                         <div className="p-6">
                             <h2 className="text-2xl font-bold mb-4">FreshMart Demo</h2>
-                            <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
-                                {/* Replace with actual video embed */}
-                                <div className="text-center text-white">
-                                    <Play size={64} className="mx-auto mb-4 opacity-50" />
-                                    <p className="text-lg">Video Demo Coming Soon</p>
-                                    <p className="text-sm text-gray-400 mt-2">
-                                        Watch how easy it is to shop for fresh groceries
-                                    </p>
-                                </div>
-                                {/* Uncomment when you have a video URL */}
-                                <iframe width="560" height="315" src="https://www.youtube.com/embed/E4JEK4-qaAA?si=xYa5jWfRi66Nd45J" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                            <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
+                                <iframe
+                                    className="w-full h-full"
+                                    src="https://www.youtube.com/embed/E4JEK4-qaAA?si=xYa5jWfRi66Nd45J"
+                                    title="YouTube video player"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    referrerPolicy="strict-origin-when-cross-origin"
+                                    allowFullScreen
+                                ></iframe>
                             </div>
                             <div className="mt-6 grid md:grid-cols-3 gap-4 text-center">
                                 <div className="p-4 bg-gray-50 rounded-lg">

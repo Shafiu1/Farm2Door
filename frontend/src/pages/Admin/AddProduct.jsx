@@ -53,13 +53,11 @@ const AddProduct = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validate file type
         if (!file.type.startsWith('image/')) {
             toast.error('Please select an image file');
             return;
         }
 
-        // Validate file size (5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast.error('Image size should be less than 5MB');
             return;
@@ -152,46 +150,45 @@ const AddProduct = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
-            <div className="container max-w-4xl">
+            {/* CHANGED: Replaced .container with proper centering classes */}
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="mb-8">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-gray-600 hover:text-green-600 mb-4"
+                        className="flex items-center gap-2 text-gray-600 hover:text-green-600 mb-4 transition-colors"
                     >
                         <ArrowLeft size={20} />
                         Back
                     </button>
-                    <h1 className="text-3xl font-bold">Add New Product</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Add New Product</h1>
                     <p className="text-gray-600 mt-1">Fill in the product details below</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
+                <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-6 shadow-sm">
                     {/* Image Upload */}
                     <div>
-                        <h2 className="text-xl font-bold mb-4">Product Image</h2>
+                        <h2 className="text-xl font-bold mb-4 text-gray-900">Product Image</h2>
                         <div className="space-y-4">
                             {imagePreview ? (
-                                <div className="relative inline-block">
+                                <div className="relative inline-block w-full">
                                     <img
                                         src={imagePreview}
                                         alt="Preview"
-                                        className="w-full max-w-md h-64 object-cover rounded-lg border-2 border-gray-200"
+                                        className="w-full max-w-md h-64 object-cover rounded-lg border-2 border-gray-200 mx-auto"
                                     />
                                     <button
                                         type="button"
                                         onClick={handleRemoveImage}
-                                        className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                                        className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors shadow-lg"
                                     >
                                         <X size={20} />
                                     </button>
                                 </div>
                             ) : (
-                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-500 transition-colors">
                                     <Upload className="mx-auto text-gray-400 mb-4" size={48} />
-                                        <label
-                                            className="cursor-pointer inline-block bg-green-500 text-white font-semibold px-4 py-2 rounded-lg shadow hover:bg-green-600 active:bg-green-700 transition duration-200"
-                                        >
-                                        <span className="btn-primary">
+                                    <label className="cursor-pointer">
+                                        <span className="inline-block bg-green-500 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-green-600 active:bg-green-700 transition duration-200">
                                             {uploadingImage ? 'Uploading...' : 'Upload Image'}
                                         </span>
                                         <input
@@ -212,7 +209,7 @@ const AddProduct = () => {
 
                     {/* Basic Information */}
                     <div>
-                        <h2 className="text-xl font-bold mb-4">Basic Information</h2>
+                        <h2 className="text-xl font-bold mb-4 text-gray-900">Basic Information</h2>
                         <div className="grid md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -223,7 +220,7 @@ const AddProduct = () => {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     placeholder="Fresh Tomatoes"
                                     required
                                 />
@@ -238,7 +235,7 @@ const AddProduct = () => {
                                     name="namebn"
                                     value={formData.namebn}
                                     onChange={handleChange}
-                                    className="input-field text-bangla"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-bangla"
                                     placeholder="তাজা টমেটো"
                                 />
                             </div>
@@ -251,7 +248,7 @@ const AddProduct = () => {
                                     name="description"
                                     value={formData.description}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     rows="3"
                                     placeholder="Fresh, juicy tomatoes..."
                                     required
@@ -266,7 +263,7 @@ const AddProduct = () => {
                                     name="descriptionbn"
                                     value={formData.descriptionbn}
                                     onChange={handleChange}
-                                    className="input-field text-bangla"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all text-bangla"
                                     rows="3"
                                     placeholder="তাজা, রসালো টমেটো..."
                                 />
@@ -276,7 +273,7 @@ const AddProduct = () => {
 
                     {/* Pricing & Stock */}
                     <div>
-                        <h2 className="text-xl font-bold mb-4">Pricing & Stock</h2>
+                        <h2 className="text-xl font-bold mb-4 text-gray-900">Pricing & Stock</h2>
                         <div className="grid md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -287,7 +284,7 @@ const AddProduct = () => {
                                     name="price"
                                     value={formData.price}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     placeholder="45"
                                     min="0"
                                     step="0.01"
@@ -304,7 +301,7 @@ const AddProduct = () => {
                                     name="originalPrice"
                                     value={formData.originalPrice}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     placeholder="60"
                                     min="0"
                                     step="0.01"
@@ -320,7 +317,7 @@ const AddProduct = () => {
                                     name="stock"
                                     value={formData.stock}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     placeholder="100"
                                     min="0"
                                     required
@@ -331,7 +328,7 @@ const AddProduct = () => {
 
                     {/* Category & Unit */}
                     <div>
-                        <h2 className="text-xl font-bold mb-4">Category & Unit</h2>
+                        <h2 className="text-xl font-bold mb-4 text-gray-900">Category & Unit</h2>
                         <div className="grid md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -341,7 +338,7 @@ const AddProduct = () => {
                                     name="category"
                                     value={formData.category}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     required
                                 >
                                     <option value="">Select Category</option>
@@ -361,7 +358,7 @@ const AddProduct = () => {
                                     name="unit"
                                     value={formData.unit}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     required
                                 >
                                     <option value="kg">Kilogram (kg)</option>
@@ -378,7 +375,7 @@ const AddProduct = () => {
 
                     {/* Additional Details */}
                     <div>
-                        <h2 className="text-xl font-bold mb-4">Additional Details</h2>
+                        <h2 className="text-xl font-bold mb-4 text-gray-900">Additional Details</h2>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -389,7 +386,7 @@ const AddProduct = () => {
                                     name="features"
                                     value={formData.features}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     placeholder="Organically grown, No pesticides, Farm fresh"
                                 />
                                 <p className="text-sm text-gray-500 mt-1">
@@ -406,7 +403,7 @@ const AddProduct = () => {
                                     name="tags"
                                     value={formData.tags}
                                     onChange={handleChange}
-                                    className="input-field"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                                     placeholder="vegetables, organic, fresh"
                                 />
                                 <p className="text-sm text-gray-500 mt-1">
@@ -415,26 +412,26 @@ const AddProduct = () => {
                             </div>
 
                             <div className="flex items-center gap-6">
-                                <label className="flex items-center gap-2">
+                                <label className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         name="isOrganic"
                                         checked={formData.isOrganic}
                                         onChange={handleChange}
-                                        className="w-4 h-4 text-green-600 rounded"
+                                        className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
                                     />
                                     <span className="text-sm font-medium text-gray-700">
                                         Organic Product
                                     </span>
                                 </label>
 
-                                <label className="flex items-center gap-2">
+                                <label className="flex items-center gap-2 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         name="isFeatured"
                                         checked={formData.isFeatured}
                                         onChange={handleChange}
-                                        className="w-4 h-4 text-green-600 rounded"
+                                        className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
                                     />
                                     <span className="text-sm font-medium text-gray-700">
                                         Featured Product
@@ -444,18 +441,19 @@ const AddProduct = () => {
                         </div>
                     </div>
 
-                    <div className="flex gap-4">
+                    {/* Submit Buttons */}
+                    <div className="flex gap-4 pt-4">
                         <button
                             type="submit"
                             disabled={loading || uploadingImage}
-                            className="btn-primary flex-1"
+                            className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? 'Adding Product...' : 'Add Product'}
                         </button>
                         <button
                             type="button"
                             onClick={() => navigate(-1)}
-                            className="btn-outline"
+                            className="px-6 py-3 border-2 border-green-600 text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-colors"
                         >
                             Cancel
                         </button>
@@ -467,4 +465,3 @@ const AddProduct = () => {
 };
 
 export default AddProduct;
-

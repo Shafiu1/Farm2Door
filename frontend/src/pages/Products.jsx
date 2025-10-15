@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, X, ChevronDown } from 'lucide-react';
+import { Filter, X, ChevronDown, Search } from 'lucide-react';
 import ProductCard from '../components/product/ProductCard';
 import Loading from '../components/common/Loading';
 import api from '../services/api';
@@ -12,6 +12,7 @@ const Products = () => {
     const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
     const [sortBy, setSortBy] = useState('name');
     const [priceRange, setPriceRange] = useState([0, 1000]);
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || ''); // ADD THIS
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,10 +23,13 @@ const Products = () => {
         fetchCategories();
     }, []);
 
-    // Fetch products when filters change
+    // Fetch products when filters change OR search params change
     useEffect(() => {
+        // Update local state when URL changes
+        setSearchQuery(searchParams.get('search') || '');
+        setSelectedCategory(searchParams.get('category') || '');
         fetchProducts();
-    }, [selectedCategory, sortBy, priceRange]);
+    }, [searchParams, sortBy, priceRange]); // ADD searchParams here
 
     const fetchCategories = async () => {
         try {
@@ -48,14 +52,21 @@ const Products = () => {
                 maxPrice: priceRange[1],
             };
 
+            // ADD SEARCH PARAMETER
+            const searchParam = searchParams.get('search');
+            if (searchParam) {
+                params.search = searchParam;
+            }
+
             if (selectedCategory && selectedCategory !== 'all') {
-                // Make sure to use the category ID, not slug
                 params.category = selectedCategory;
             }
 
+            console.log('Fetching with params:', params); // Debug
+
             const response = await api.get('/products', { params });
             setProducts(response.products || []);
-            setTotalProducts(response.totalProducts || 0);
+            setTotalProducts(response.totalProducts || response.products?.length || 0);
         } catch (error) {
             console.error('Error fetching products:', error);
             toast.error('Failed to fetch products');
@@ -67,17 +78,36 @@ const Products = () => {
 
     const handleCategoryChange = (categoryId) => {
         setSelectedCategory(categoryId);
+        const newParams = new URLSearchParams(searchParams);
+
         if (categoryId && categoryId !== 'all') {
-            setSearchParams({ category: categoryId });
+            newParams.set('category', categoryId);
         } else {
-            setSearchParams({});
+            newParams.delete('category');
         }
+
+        setSearchParams(newParams);
+    };
+
+    // ADD SEARCH HANDLER
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const newParams = new URLSearchParams(searchParams);
+
+        if (searchQuery.trim()) {
+            newParams.set('search', searchQuery.trim());
+        } else {
+            newParams.delete('search');
+        }
+
+        setSearchParams(newParams);
     };
 
     const clearFilters = () => {
         setSelectedCategory('');
         setSortBy('name');
         setPriceRange([0, 1000]);
+        setSearchQuery(''); // ADD THIS
         setSearchParams({});
     };
 
@@ -90,10 +120,18 @@ const Products = () => {
             {/* Header */}
             <div className="bg-white border-b border-gray-200">
                 <div className="container py-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">All Products</h1>
-                            <p className="text-gray-600 mt-1 text-bangla">সকল পণ্য দেখুন</p>
+                            <h1 className="text-3xl font-bold text-gray-900">
+                                {searchParams.get('search')
+                                    ? `Search: "${searchParams.get('search')}"`
+                                    : 'All Products'}
+                            </h1>
+                            <p className="text-gray-600 mt-1 text-bangla">
+                                {searchParams.get('search')
+                                    ? `"${searchParams.get('search')}" এর জন্য ফলাফল`
+                                    : 'সকল পণ্য দেখুন'}
+                            </p>
                         </div>
                         <button
                             onClick={() => setShowFilters(!showFilters)}
@@ -103,6 +141,34 @@ const Products = () => {
                             Filters
                         </button>
                     </div>
+
+                    {/* ADD SEARCH BAR ON PRODUCTS PAGE */}
+                    <form onSubmit={handleSearch} className="max-w-2xl">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search products..."
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            />
+                            {searchQuery && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        const newParams = new URLSearchParams(searchParams);
+                                        newParams.delete('search');
+                                        setSearchParams(newParams);
+                                    }}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X size={20} />
+                                </button>
+                            )}
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -184,7 +250,10 @@ const Products = () => {
                         {/* Results Info */}
                         <div className="flex items-center justify-between mb-6">
                             <p className="text-gray-600">
-                                Showing <span className="font-semibold">{products.length}</span> of <span className="font-semibold">{totalProducts}</span> products
+                                Showing <span className="font-semibold">{products.length}</span>
+                                {searchParams.get('search') && (
+                                    <span> result(s) for "<strong>{searchParams.get('search')}</strong>"</span>
+                                )}
                             </p>
 
                             {/* Mobile Sort */}
@@ -208,11 +277,19 @@ const Products = () => {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-16">
-                                <p className="text-gray-500 text-lg">No products found</p>
+                            <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
+                                <Search size={64} className="mx-auto text-gray-300 mb-4" />
+                                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                                    No products found
+                                </h3>
+                                <p className="text-gray-500 mb-6">
+                                    {searchParams.get('search')
+                                        ? `No results for "${searchParams.get('search')}". Try different keywords.`
+                                        : 'Try adjusting your filters'}
+                                </p>
                                 <button
                                     onClick={clearFilters}
-                                    className="btn-primary mt-4"
+                                    className="btn-primary"
                                 >
                                     Clear Filters
                                 </button>
